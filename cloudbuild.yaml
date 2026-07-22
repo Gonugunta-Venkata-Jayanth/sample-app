@@ -1,0 +1,19 @@
+steps:
+  - name: 'gcr.io/cloud-builders/go'
+    id: 'Compile application'
+    env: ['GOPATH=/gopath']
+    args: ['build', '-o', 'main', 'main.go']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Docker image'
+    args: ['build', '-t', 'us-west1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-cloudbuild:v2.0', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push Docker image'
+    args: ['push', 'us-west1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-cloudbuild:v2.0']
+  - name: 'gcr.io/cloud-builders/kubectl'
+    id: 'Deploy'
+    args: ['-n', 'prod', 'apply', '-f', 'prod/deployment.yaml']
+    env:
+    - 'CLOUDSDK_COMPUTE_REGION=us-west1-a'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=hello-cluster'
+options:
+ logging: CLOUD_LOGGING_ONLY
