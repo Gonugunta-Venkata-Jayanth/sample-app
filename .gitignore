@@ -1,0 +1,19 @@
+# Go build output
+/hello-app
+/main
+*.exe
+*.test
+*.out
+
+# Dependencies / tooling
+vendor/
+go.work
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
