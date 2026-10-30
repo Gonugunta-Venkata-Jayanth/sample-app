@@ -14,6 +14,23 @@ spec:
     spec:
       containers:
       - name: dev-container
-        image: us-west1-docker.pkg.dev/qwiklabs-gcp-01-13bcb8068b04/my-repository/hello-cloudbuild:v1.0
+        # $PROJECT_ID is replaced by the "Set project ID" step in cloudbuild*.yaml
+        image: us-west1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-cloudbuild-dev:v1.0
+        env:
+        - name: PORT
+          value: "8080"
         ports:
         - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
