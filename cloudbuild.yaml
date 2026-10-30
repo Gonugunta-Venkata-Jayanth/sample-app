@@ -1,17 +1,22 @@
 steps:
-  - name: 'gcr.io/cloud-builders/go'
-    id: 'Compile application'
-    env: ['GOPATH=/gopath']
-    args: ['build', '-o', 'main', 'main.go']
+  - name: 'golang:1.19'
+    id: 'Compile and test application'
+    entrypoint: 'bash'
+    args: ['-c', 'go test ./... && CGO_ENABLED=0 go build -o main .']
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker image'
     args: ['build', '-t', 'us-west1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-cloudbuild:v2.0', '.']
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Push Docker image'
     args: ['push', 'us-west1-docker.pkg.dev/$PROJECT_ID/my-repository/hello-cloudbuild:v2.0']
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Set project ID in manifests'
+    entrypoint: 'bash'
+    # $$ escapes Cloud Build substitution, so sed replaces the literal $PROJECT_ID token
+    args: ['-c', 'sed -i "s|[$$]PROJECT_ID|$PROJECT_ID|g" prod/*.yaml']
   - name: 'gcr.io/cloud-builders/kubectl'
     id: 'Deploy'
-    args: ['-n', 'prod', 'apply', '-f', 'prod/deployment.yaml']
+    args: ['-n', 'prod', 'apply', '-f', 'prod/']
     env:
     - 'CLOUDSDK_COMPUTE_REGION=us-west1-a'
     - 'CLOUDSDK_CONTAINER_CLUSTER=hello-cluster'
